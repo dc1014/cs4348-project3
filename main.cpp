@@ -59,6 +59,11 @@ int main(int argc, char* argv[]) {
                 fs.readFile(inFileName, copyFileName);
                 cout << endl << "File " << inFileName << " copied" << endl;
                 break;
+            case 7: // delete file in simuulation
+                cout << "Delete file: ";
+                cin >> inFileName;
+                fs.deleteFile(inFileName);
+                break;
             case 8: // terminate
                 cout << "terminating" << endl;
                 break;

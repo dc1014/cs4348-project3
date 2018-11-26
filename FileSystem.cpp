@@ -5,6 +5,7 @@ FileSystem::FileSystem() {
     maxSize = 512 * 10;
     fileTablePosition = 0;
     for (int i = 0; i < 131072; i++) {
+
         bytes[i] = '0';
     }
     bytes[512] = '1';
@@ -17,15 +18,18 @@ void FileSystem::readFile(char* fileName, char* targetName) {
     int* blocks;
 
     if (is) {
+
         // get length of file:
         is.seekg (0, is.end);
         int length = is.tellg();
 
         if (length > maxSize) {
+
             cout << "File too big, skipping" << endl;
             is.close();
         }
         else {
+
             is.seekg (0, is.beg);
 
             char * buffer = new char [length];
@@ -36,26 +40,27 @@ void FileSystem::readFile(char* fileName, char* targetName) {
             blocks = claimBlocks(length);
 
             if (blocks[0] == 0) {
+
                 cout << "not enough space" << endl;
             }
 
             else {
 
                 if (is) {
+
                     writeToSystem(buffer, blocks);
                     writeToTable(targetName, blocks);
                     cout << "all characters read successfully.";
                 }
                 else {
+
                   cout << endl << "error: only " << is.gcount() << " could be read";
                 }
             }
 
             is.close();
-            // ...buffer contains the entire file...
 
             delete[] buffer;
-
         }
     }
 }
@@ -86,6 +91,7 @@ void FileSystem::writeFile(char* fileName, char* targetName) {
     }
 
     else {
+
         cout << "File not found!" << endl;
     }
 }
@@ -100,10 +106,13 @@ int* FileSystem::claimBlocks(int fileSize) {
     for(int i = 514; i < 768 && tempSize > 0; i++) {
 
         if (attempt == true && bytes[i] == '1') {
+
             i++;
 
             for(int i = 0; i < 10; i++) {
+
                 if (blocks[i] != 0) {
+
                     bytes[blocks[i]] = '0';
                 }
 
@@ -115,6 +124,7 @@ int* FileSystem::claimBlocks(int fileSize) {
         }
 
         else if (bytes[i] == '0') {
+
             tempSize = tempSize - 512;
             blocks[counter] = i - BLOCK_OFFSET;
             counter++;
@@ -124,6 +134,7 @@ int* FileSystem::claimBlocks(int fileSize) {
     }
 
     if (counter == 0) {
+
         blocks[0] = 0;
     }
 
@@ -132,6 +143,7 @@ int* FileSystem::claimBlocks(int fileSize) {
 
 void FileSystem::printTable() {
     for (int i = 0; i < fileTablePosition; i++) {
+
         cout << bytes[i];
     }
     cout << endl;
@@ -140,6 +152,7 @@ void FileSystem::printTable() {
 void FileSystem::writeToSystem(char* buffer, int* blocks) {
     int startingByte = (blocks[0] * 512) - 1;
     for (unsigned int i = 0; i < strlen(buffer); i++) {
+
         bytes[startingByte] = buffer[i];
         startingByte++;
     }
@@ -151,6 +164,7 @@ void FileSystem::writeToTable(char* targetName, int* blocks) {
     int lastBlock = -1;
 
     for (unsigned int i = 0; i < strlen(targetName); i++) {
+
         bytes[fileTablePosition] = targetName[i];
         fileTablePosition++;
     }
@@ -160,10 +174,13 @@ void FileSystem::writeToTable(char* targetName, int* blocks) {
     fileTablePosition++;
 
     for (unsigned int i = 0; i < sizeof(blocks); i++) {
+
         sprintf(buffer,"%d",blocks[i]);
 
         if (i == 0) {
+
             for (unsigned int j = 0; j < strlen(buffer); j++) {
+
                     bytes[fileTablePosition] = buffer[j];
                     fileTablePosition++;
             }
@@ -175,6 +192,7 @@ void FileSystem::writeToTable(char* targetName, int* blocks) {
         }
 
         else if (blocks[i] != 0) {
+
             lastBlock = i;
         }
     }
@@ -184,6 +202,7 @@ void FileSystem::writeToTable(char* targetName, int* blocks) {
     }
 
     for (unsigned int i = 0; i < strlen(buffer); i++) {
+
             bytes[fileTablePosition] = buffer[i];
             fileTablePosition++;
     }
@@ -198,6 +217,7 @@ void FileSystem::printBitmap() {
         cout << bytes[i];
 
         if (i > 512 && (i + 1) % 32 == 0) {
+
             cout << endl;
         }
     }
@@ -205,7 +225,7 @@ void FileSystem::printBitmap() {
 }
 
 int * FileSystem::findFileBlocks(char * fileName) {
-    int static blocks[2] = { 0 };
+    int static blocks[4] = { 0 };
     regex re(fileName);
     smatch m;
     string delimiter = "|";
@@ -215,6 +235,7 @@ int * FileSystem::findFileBlocks(char * fileName) {
     string token;
 
     for (int i = 0; i < 512; i++) {
+
         fileTable += bytes[i];
     }
 
@@ -222,26 +243,20 @@ int * FileSystem::findFileBlocks(char * fileName) {
 
     // find exact match in file table
     if (m.position(0) != 512 && m[0] == string(fileName)) {
+
+        blocks[3] = m.position(0); // starting position of liine on File table
         token = fileTable.substr(m.position(0), fileTable.find('\n'));
+        blocks[4] = token.length(); // ending position of line on file table
         token.erase(0, token.find(delimiter) + delimiter.length());
         startBlock = stoi(token.substr(0, token.find(delimiter)));
         token.erase(0, token.find(delimiter) + delimiter.length());
         endBlock = stoi(token.substr(0, token.find("\n"))); // special delimiter for end of life
-
-        // cout << "first block: " << startBlock << endl;
-        // cout << "last block: " << endBlock << endl;
 
         blocks[0] = startBlock;
         blocks[1] = endBlock;
     }
 
     return blocks;
-
-    // else {
-
-    //     cout << "File " << fileName << " not found!" << endl;
-    // }
-
 }
 
 void FileSystem::displayFile(char * fileName) {
@@ -256,13 +271,12 @@ void FileSystem::displayFile(char * fileName) {
     // find exact match in file table
     if (blocks[0] != 0) {
 
-
         blockCount = endBlock - startBlock;
-
         startByte = 512 * startBlock - 1;
         endByte = startByte + (512 * (blockCount + 1));
 
         for (int i = startByte; i < endByte; i++) {
+
             cout << bytes[i];
         }
 
@@ -283,4 +297,42 @@ void FileSystem::printBlock(int block) {
     }
 
     cout << endl;
+}
+
+void FileSystem::deleteFile(char* fileName) {
+    int blockCount;
+    int startByte;
+    int endByte;
+    int* blocks;
+    blocks = findFileBlocks(fileName);
+    int startBlock = blocks[0];
+    int endBlock = blocks[1];
+
+    // find exact match in file table
+    if (blocks[0] != 0) {
+
+        blockCount = endBlock - startBlock;
+
+        startByte = 512 * startBlock - 1;
+        endByte = startByte + (512 * (blockCount + 1));
+
+        for (int i = startByte; i < endByte; i++) {
+
+            bytes[i] = '0';
+        }
+
+        for (int i = blocks[3]; i < blocks[3] + blocks[4]; i++) {
+
+            bytes[i] = ' ';
+        }
+
+        for (int i = startBlock - 1; i <= endBlock; i++) {
+
+            bytes[i + 512] = '0';
+        }
+    }
+
+    else {
+        cout << "File " << fileName << " not found!" << endl;
+    }
 }

@@ -23,14 +23,15 @@ class FileSystem {
         FileSystem();
         int* claimBlocks(int);
         int* findFileBlocks(char *);
+        void deleteFile(char *);
+        void displayFile(char *);
         void printBitmap();
         void printBlock(int);
         void printTable();
         void readFile(char *, char *);
         void writeFile(char *, char *);
-        void writeToTable(char *, int*);
         void writeToSystem(char *, int*);
-        void displayFile(char *);
+        void writeToTable(char *, int*);
 };
 
 #endif
