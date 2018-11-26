@@ -6,6 +6,7 @@ using namespace std;
 
 int main(int argc, char* argv[]) {
     int input;
+    int blockToDisplay;
 
     FileSystem fs;
     char* inFileName = new char[8];
@@ -24,7 +25,7 @@ int main(int argc, char* argv[]) {
 
         cin >> input;
 
-        cout << "\n Choice " << input << endl;
+        cout << "\nChoice " << input << endl;
 
         switch(input) {
             case 1: // display a file
@@ -37,6 +38,11 @@ int main(int argc, char* argv[]) {
                 break;
             case 3:
                 fs.printBitmap(); // print FS Bitmap
+                break;
+            case 4: // display a disk block
+                cout << "Display block by number: ";
+                cin >> blockToDisplay;
+                fs.printBlock(blockToDisplay);
                 break;
             case 6: // Copy file from disk
                 cout << "Copy from: ";

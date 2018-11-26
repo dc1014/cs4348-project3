@@ -23,6 +23,7 @@ class FileSystem {
         FileSystem();
         int* findBlocks(int);
         void printBitmap();
+        void printBlock(int);
         void printTable();
         void readFile(char *, char *);
         void writeToTable(char *, int*);

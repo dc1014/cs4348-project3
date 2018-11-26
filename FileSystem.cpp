@@ -225,3 +225,13 @@ void FileSystem::displayFile(char * fileName) {
         cout << "File " << fileName << " not found!" << endl;
     }
 }
+
+void FileSystem::printBlock(int block) {
+    int startByte = 512 * (block - 1);
+
+    for (int i = startByte; i < startByte + 512; i++) {
+        cout << bytes[i];
+    }
+
+    cout << endl;
+}
