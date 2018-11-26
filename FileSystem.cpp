@@ -33,7 +33,7 @@ void FileSystem::readFile(char* fileName, char* targetName) {
             // read data as a block:
             is.read (buffer,length);
 
-            blocks = findBlocks(length);
+            blocks = claimBlocks(length);
 
             if (blocks[0] == 0) {
                 cout << "not enough space" << endl;
@@ -60,8 +60,38 @@ void FileSystem::readFile(char* fileName, char* targetName) {
     }
 }
 
+void FileSystem::writeFile(char* fileName, char* targetName) {
+    int* blocks;
+    int blockCount;
+    int startByte;
+    int endByte;
+    ofstream os (targetName);
+    blocks = findFileBlocks(fileName);
+    int startBlock = blocks[0];
+    int endBlock = blocks[1];
+
+    if (os && blocks[0] != 0) {
+
+        blockCount = endBlock - startBlock;
+
+        startByte = 512 * startBlock - 1;
+        endByte = startByte + (512 * (blockCount + 1));
+
+        for (int i = startByte; i < endByte; i++) {
+            os << bytes[i];
+        }
+
+        cout << endl;
+        os.close();
+    }
+
+    else {
+        cout << "File not found!" << endl;
+    }
+}
+
 // abstract
-int* FileSystem::findBlocks(int fileSize) {
+int* FileSystem::claimBlocks(int fileSize) {
     static int blocks[10] = { 0 };
     int counter = 0;
     int tempSize = fileSize;
@@ -133,7 +163,6 @@ void FileSystem::writeToTable(char* targetName, int* blocks) {
         sprintf(buffer,"%d",blocks[i]);
 
         if (i == 0) {
-            // cout << "first block is " << blocks[i] << endl;
             for (unsigned int j = 0; j < strlen(buffer); j++) {
                     bytes[fileTablePosition] = buffer[j];
                     fileTablePosition++;
@@ -175,10 +204,8 @@ void FileSystem::printBitmap() {
     cout << endl;
 }
 
-void FileSystem::displayFile(char * fileName) {
-    int blockCount;
-    int startByte;
-    int endByte;
+int * FileSystem::findFileBlocks(char * fileName) {
+    int static blocks[2] = { 0 };
     regex re(fileName);
     smatch m;
     string delimiter = "|";
@@ -193,8 +220,6 @@ void FileSystem::displayFile(char * fileName) {
 
     regex_search(fileTable, m, re);
 
-    cout << "match is: " << m[0] << endl;
-
     // find exact match in file table
     if (m.position(0) != 512 && m[0] == string(fileName)) {
         token = fileTable.substr(m.position(0), fileTable.find('\n'));
@@ -203,15 +228,39 @@ void FileSystem::displayFile(char * fileName) {
         token.erase(0, token.find(delimiter) + delimiter.length());
         endBlock = stoi(token.substr(0, token.find("\n"))); // special delimiter for end of life
 
-        cout << "first block: " << startBlock << endl;
-        cout << "last block: " << endBlock << endl;
+        // cout << "first block: " << startBlock << endl;
+        // cout << "last block: " << endBlock << endl;
+
+        blocks[0] = startBlock;
+        blocks[1] = endBlock;
+    }
+
+    return blocks;
+
+    // else {
+
+    //     cout << "File " << fileName << " not found!" << endl;
+    // }
+
+}
+
+void FileSystem::displayFile(char * fileName) {
+    int blockCount;
+    int startByte;
+    int endByte;
+    int* blocks;
+    blocks = findFileBlocks(fileName);
+    int startBlock = blocks[0];
+    int endBlock = blocks[1];
+
+    // find exact match in file table
+    if (blocks[0] != 0) {
+
 
         blockCount = endBlock - startBlock;
 
         startByte = 512 * startBlock - 1;
-        cout << "start byte: " << startByte << endl;
         endByte = startByte + (512 * (blockCount + 1));
-        cout << "last byte: " << endByte << endl;
 
         for (int i = startByte; i < endByte; i++) {
             cout << bytes[i];

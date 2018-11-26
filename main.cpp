@@ -44,6 +44,13 @@ int main(int argc, char* argv[]) {
                 cin >> blockToDisplay;
                 fs.printBlock(blockToDisplay);
                 break;
+            case 5: // Copy file to disk
+                cout << "Copy from: ";
+                cin >> inFileName;
+                cout << "Copy to: ";
+                cin >> copyFileName;
+                fs.writeFile(inFileName, copyFileName);
+                break;
             case 6: // Copy file from disk
                 cout << "Copy from: ";
                 cin >> inFileName;

@@ -21,11 +21,13 @@ class FileSystem {
         unsigned char bytes[131072];
     public:
         FileSystem();
-        int* findBlocks(int);
+        int* claimBlocks(int);
+        int* findFileBlocks(char *);
         void printBitmap();
         void printBlock(int);
         void printTable();
         void readFile(char *, char *);
+        void writeFile(char *, char *);
         void writeToTable(char *, int*);
         void writeToSystem(char *, int*);
         void displayFile(char *);
