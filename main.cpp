@@ -11,21 +11,6 @@ int main(int argc, char* argv[]) {
     char* inFileName = new char[8];
     char* copyFileName = new char[8];
 
-    // ifstream infile("./test.txt", ios::in | ios::binary);
-    // infile.seekg(0, infile.end);
-    // size_t length = infile.tellg();
-    // infile.seekg(0, infile.beg);
-
-    // cout << length << endl;
-
-    // if (length > sizeof (buffer)) {
-    //     length = sizeof (buffer);
-    // }
-
-    // infile.read(buffer,length);
-    // infile.close();
-    // cout << buffer;
-
     while (input != 8) {
         cout << "1) Display a file" << endl;
         cout << "2) Display the file table" << endl;
@@ -35,19 +20,25 @@ int main(int argc, char* argv[]) {
         cout << "6) Copy a file from the real system to a file in the simulation" << endl;
         cout << "7) Delete a file" << endl;
         cout << "8) Exit" << endl;
+        cin.clear();
 
         cin >> input;
 
         cout << "\n Choice " << input << endl;
 
         switch(input) {
-            case 2:
+            case 1: // display a file
+                cout << "Display file by name: ";
+                cin >> inFileName;
+                fs.displayFile(inFileName);
+                break;
+            case 2: // print FS Table
                 fs.printTable();
                 break;
             case 3:
-                fs.printBitmap();
+                fs.printBitmap(); // print FS Bitmap
                 break;
-            case 6:
+            case 6: // Copy file from disk
                 cout << "Copy from: ";
                 cin >> inFileName;
                 cout << "Copy to: ";
@@ -55,7 +46,7 @@ int main(int argc, char* argv[]) {
                 fs.readFile(inFileName, copyFileName);
                 cout << endl << "File " << inFileName << " copied" << endl;
                 break;
-            case 8:
+            case 8: // terminate
                 cout << "terminating" << endl;
                 break;
             default:

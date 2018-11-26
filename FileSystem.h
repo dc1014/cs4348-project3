@@ -3,6 +3,10 @@
 
 #include <iostream>
 #include <fstream>
+#include <stdio.h>
+#include <stdlib.h>
+#include <regex>
+#include <string>
 
 #define DATA_START 1024
 #define BLOCK_OFFSET 511
@@ -22,6 +26,8 @@ class FileSystem {
         void printTable();
         void readFile(char *, char *);
         void writeToTable(char *, int*);
+        void writeToSystem(char *, int*);
+        void displayFile(char *);
 };
 
 #endif
