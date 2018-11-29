@@ -153,13 +153,22 @@ void FileSystem::printTable() {
 }
 
 int FileSystem::writeToSystem(char* buffer, int* blocks) {
-    int startingByte = ((blocks[0] - 1) * 512 );
-    for (unsigned int i = 0; i < strlen(buffer); i++) {
+    int endingByte;
+    unsigned int bufferPosition = 0;
+    int startByte;
+    for (unsigned int i = 0; i < sizeof(blocks) && bufferPosition < strlen(buffer); i++) {
+        if (blocks[i] != 0) {
+             startByte = ((blocks[i] - 1) * 512);
+             for(unsigned int j = 0; j < 512 && bufferPosition < strlen(buffer) + 1; j++) {
+                bytes[startByte + j] = buffer[bufferPosition];
+                bufferPosition++;
+                endingByte = startByte + j;
+             }
+        }
 
-        bytes[startingByte] = buffer[i];
-        startingByte++;
     }
-    return startingByte;
+
+    return endingByte;
 }
 
 // abstract
