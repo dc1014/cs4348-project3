@@ -3,10 +3,12 @@
 FileSystem::FileSystem() {
     maxBuffer = 512;
     maxSize = 512 * 10;
-    fileTablePosition = 0;
     for (int i = 0; i < 131072; i++) {
 
         bytes[i] = '0';
+        if (i < 512 && i % 64 == 0) {
+            bytes[i] = '~';
+        }
     }
     bytes[512] = '1';
     bytes[513] = '1';
@@ -148,7 +150,7 @@ int* FileSystem::claimBlocks(int fileSize) {
 }
 
 void FileSystem::printTable() {
-    for (int i = 0; i < fileTablePosition; i++) {
+    for (int i = 0; i < 512; i++) {
 
         cout << bytes[i];
     }
@@ -169,6 +171,16 @@ int FileSystem::writeToSystem(char* buffer, int* blocks) {
 void FileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
     char buffer[20];
     int lastBlock = -1;
+    int fileTablePosition = -1;
+    int counter = 0;
+    while (fileTablePosition == -1 && counter < 512) {
+        if (bytes[counter] == '~') {
+            fileTablePosition = counter;
+        }
+        else {
+            counter++;
+        }
+    }
 
     for (unsigned int i = 0; i < strlen(targetName); i++) {
         bytes[fileTablePosition] = targetName[i];
@@ -310,7 +322,7 @@ void FileSystem::displayFile(char * fileName) {
 }
 
 void FileSystem::printBlock(int block) {
-    int startByte = (512 * block) - 1;
+    int startByte = 512 * (block - 1);
 
     for (int i = startByte; i < startByte + 512; i++) {
         cout << bytes[i];
@@ -342,8 +354,10 @@ void FileSystem::deleteFile(char* fileName) {
         }
 
         for (int i = blocks[3]; i < blocks[3] + blocks[4]; i++) {
-
-            bytes[i] = ' ';
+            bytes[i] = '0';
+            if (i == blocks[3]) {
+                bytes[i] = '~';
+            }
         }
 
         for (int i = startBlock - 1; i <= endBlock; i++) {

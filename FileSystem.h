@@ -10,6 +10,7 @@
 
 #define DATA_START 1024
 #define BLOCK_OFFSET 511
+#define FILE_TABLE_FIXED 64
 
 using namespace std;
 
