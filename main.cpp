@@ -1,6 +1,8 @@
 #include <fstream>
 #include <iostream>
 #include "FileSystem.h"
+#include "IndexedFileSystem.h"
+
 
 using namespace std;
 

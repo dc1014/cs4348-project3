@@ -153,7 +153,7 @@ void FileSystem::printTable() {
 }
 
 int FileSystem::writeToSystem(char* buffer, int* blocks) {
-    int startingByte = (blocks[0] * 512) - 1;
+    int startingByte = ((blocks[0] - 1) * 512 );
     for (unsigned int i = 0; i < strlen(buffer); i++) {
 
         bytes[startingByte] = buffer[i];
@@ -324,21 +324,17 @@ void FileSystem::printBlock(int block) {
 }
 
 void FileSystem::deleteFile(char* fileName) {
-    int blockCount;
     int startByte;
-    int endByte;
     int* blocks;
     blocks = findFileBlocks(fileName);
+    int endByte = blocks[0];
     int startBlock = blocks[1];
     int endBlock = blocks[2];
 
     // find exact match in file table
     if (blocks[0] != 0) {
 
-        blockCount = endBlock - startBlock;
-
-        startByte = (512 * startBlock) - 1;
-        endByte = startByte + (512 * (blockCount + 1));
+        startByte = 512 * (startBlock - 1);
 
         for (int i = startByte; i < endByte; i++) {
 
