@@ -6,7 +6,7 @@ FileSystem::FileSystem() {
     for (int i = 0; i < 131072; i++) {
 
         bytes[i] = '0';
-        if (i < 512 && i % 64 == 0) {
+        if (i < 512 && i % FILE_TABLE_FIXED == 0) {
             bytes[i] = '~';
         }
     }
@@ -70,20 +70,15 @@ void FileSystem::readFile(char* fileName, char* targetName) {
 
 void FileSystem::writeFile(char* fileName, char* targetName) {
     int* blocks;
-    int blockCount;
     int startByte;
-    int endByte;
     ofstream os (targetName);
     blocks = findFileBlocks(fileName);
-    int startBlock = blocks[0];
-    int endBlock = blocks[1];
+    int startBlock = blocks[1];
+    int endByte = blocks[0];
 
     if (os && blocks[0] != 0) {
 
-        blockCount = endBlock - startBlock;
-
         startByte = 512 * startBlock - 1;
-        endByte = startByte + (512 * (blockCount + 1));
 
         for (int i = startByte; i < endByte; i++) {
             os << bytes[i];
@@ -294,17 +289,14 @@ int * FileSystem::findFileBlocks(char * fileName) {
 }
 
 void FileSystem::displayFile(char * fileName) {
-    int blockCount;
     int startByte;
     int* blocks;
     blocks = findFileBlocks(fileName);
     int endByte = blocks[0];
     int startBlock = blocks[1];
-    int endBlock = blocks[2];
 
     if (startBlock != 0) {
 
-        blockCount = endBlock - startBlock;
         startByte = 512 * startBlock - 1;
 
         for (int i = startByte; i < endByte; i++) {
@@ -353,7 +345,7 @@ void FileSystem::deleteFile(char* fileName) {
             bytes[i] = '0';
         }
 
-        for (int i = blocks[3]; i < blocks[3] + blocks[4]; i++) {
+        for (int i = blocks[3]; i < blocks[3] + FILE_TABLE_FIXED; i++) {
             bytes[i] = '0';
             if (i == blocks[3]) {
                 bytes[i] = '~';
