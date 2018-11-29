@@ -99,6 +99,11 @@ void FileSystem::writeFile(char* fileName, char* targetName) {
 // abstract
 int* FileSystem::claimBlocks(int fileSize) {
     int * blocks = new int[10];
+
+    for (int i = 0; i < 10; i++) {
+        blocks[i] = 0;
+    }
+
     int counter = 0;
     int tempSize = fileSize;
     bool attempt = false;
