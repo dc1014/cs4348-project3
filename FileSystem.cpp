@@ -226,14 +226,17 @@ void FileSystem::printBitmap() {
 }
 
 int * FileSystem::findFileBlocks(char * fileName) {
-    int* blocks = new int[4];
-    regex re(fileName);
+    int* blocks = new int[11];
     smatch m;
     string delimiter = "|";
     int endBlock;
     string fileTable;
     int startBlock;
     string token;
+    string tempName = fileName;
+    tempName += "\\|";
+
+    regex re(tempName);
 
     for (int i = 0; i < 512; i++) {
 
@@ -243,7 +246,7 @@ int * FileSystem::findFileBlocks(char * fileName) {
     regex_search(fileTable, m, re);
 
     // find exact match in file table
-    if (m.position(0) != 512 && m[0] == string(fileName)) {
+    if (m.position(0) != 512) {
 
         blocks[3] = m.position(0); // starting position of liine on File table
         token = fileTable.substr(m.position(0), fileTable.find('\n'));
