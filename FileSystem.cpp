@@ -98,7 +98,7 @@ void FileSystem::writeFile(char* fileName, char* targetName) {
 
 // abstract
 int* FileSystem::claimBlocks(int fileSize) {
-    static int blocks[10] = { 0 };
+    int * blocks = new int[10];
     int counter = 0;
     int tempSize = fileSize;
     bool attempt = false;
@@ -189,6 +189,7 @@ void FileSystem::writeToTable(char* targetName, int* blocks) {
 
             bytes[fileTablePosition] = '|';
             fileTablePosition++;
+            lastBlock = i;
         }
 
         else if (blocks[i] != 0) {
@@ -225,7 +226,7 @@ void FileSystem::printBitmap() {
 }
 
 int * FileSystem::findFileBlocks(char * fileName) {
-    int static blocks[4] = { 0 };
+    int* blocks = new int[4];
     regex re(fileName);
     smatch m;
     string delimiter = "|";
@@ -290,7 +291,7 @@ void FileSystem::displayFile(char * fileName) {
 }
 
 void FileSystem::printBlock(int block) {
-    int startByte = 512 * (block - 1);
+    int startByte = (512 * block) - 1;
 
     for (int i = startByte; i < startByte + 512; i++) {
         cout << bytes[i];
