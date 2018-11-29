@@ -30,8 +30,8 @@ class FileSystem {
         void printTable();
         void readFile(char *, char *);
         void writeFile(char *, char *);
-        void writeToSystem(char *, int*);
-        void writeToTable(char *, int*);
+        int writeToSystem(char *, int*);
+        void writeToTable(char *, int*, int);
 };
 
 #endif

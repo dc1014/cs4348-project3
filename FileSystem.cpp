@@ -16,6 +16,7 @@ FileSystem::FileSystem() {
 void FileSystem::readFile(char* fileName, char* targetName) {
     ifstream is (fileName, ifstream::binary);
     int* blocks;
+    int lastByte;
 
     if (is) {
 
@@ -48,8 +49,8 @@ void FileSystem::readFile(char* fileName, char* targetName) {
 
                 if (is) {
 
-                    writeToSystem(buffer, blocks);
-                    writeToTable(targetName, blocks);
+                    lastByte = writeToSystem(buffer, blocks);
+                    writeToTable(targetName, blocks, lastByte);
                     cout << "all characters read successfully.";
                 }
                 else {
@@ -154,26 +155,35 @@ void FileSystem::printTable() {
     cout << endl;
 }
 
-void FileSystem::writeToSystem(char* buffer, int* blocks) {
+int FileSystem::writeToSystem(char* buffer, int* blocks) {
     int startingByte = (blocks[0] * 512) - 1;
     for (unsigned int i = 0; i < strlen(buffer); i++) {
 
         bytes[startingByte] = buffer[i];
         startingByte++;
     }
+    return startingByte;
 }
 
 // abstract
-void FileSystem::writeToTable(char* targetName, int* blocks) {
-    char buffer[3];
+void FileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
+    char buffer[20];
     int lastBlock = -1;
 
     for (unsigned int i = 0; i < strlen(targetName); i++) {
-
         bytes[fileTablePosition] = targetName[i];
         fileTablePosition++;
     }
 
+    bytes[fileTablePosition] = '|';
+    fileTablePosition++;
+
+    sprintf(buffer,"%d",lastByte);
+
+    for (unsigned int i = 0; i < strlen(buffer); i++) {
+        bytes[fileTablePosition] = buffer[i];
+        fileTablePosition++;
+    }
 
     bytes[fileTablePosition] = '|';
     fileTablePosition++;
@@ -237,6 +247,7 @@ int * FileSystem::findFileBlocks(char * fileName) {
     int endBlock;
     string fileTable;
     int startBlock;
+    int endByte;
     string token;
     string tempName = fileName;
     tempName += "\\|";
@@ -257,12 +268,14 @@ int * FileSystem::findFileBlocks(char * fileName) {
         token = fileTable.substr(m.position(0), fileTable.find('\n'));
         blocks[4] = token.length(); // ending position of line on file table
         token.erase(0, token.find(delimiter) + delimiter.length());
+        endByte = stoi(token.substr(0, token.find(delimiter)));
+        token.erase(0, token.find(delimiter) + delimiter.length());
         startBlock = stoi(token.substr(0, token.find(delimiter)));
         token.erase(0, token.find(delimiter) + delimiter.length());
         endBlock = stoi(token.substr(0, token.find("\n"))); // special delimiter for end of life
-
-        blocks[0] = startBlock;
-        blocks[1] = endBlock;
+        blocks[0] = endByte;
+        blocks[1] = startBlock;
+        blocks[2] = endBlock;
     }
 
     return blocks;
@@ -271,18 +284,16 @@ int * FileSystem::findFileBlocks(char * fileName) {
 void FileSystem::displayFile(char * fileName) {
     int blockCount;
     int startByte;
-    int endByte;
     int* blocks;
     blocks = findFileBlocks(fileName);
-    int startBlock = blocks[0];
-    int endBlock = blocks[1];
+    int endByte = blocks[0];
+    int startBlock = blocks[1];
+    int endBlock = blocks[2];
 
-    // find exact match in file table
-    if (blocks[0] != 0) {
+    if (startBlock != 0) {
 
         blockCount = endBlock - startBlock;
         startByte = 512 * startBlock - 1;
-        endByte = startByte + (512 * (blockCount + 1));
 
         for (int i = startByte; i < endByte; i++) {
 
@@ -314,15 +325,15 @@ void FileSystem::deleteFile(char* fileName) {
     int endByte;
     int* blocks;
     blocks = findFileBlocks(fileName);
-    int startBlock = blocks[0];
-    int endBlock = blocks[1];
+    int startBlock = blocks[1];
+    int endBlock = blocks[2];
 
     // find exact match in file table
     if (blocks[0] != 0) {
 
         blockCount = endBlock - startBlock;
 
-        startByte = 512 * startBlock - 1;
+        startByte = (512 * startBlock) - 1;
         endByte = startByte + (512 * (blockCount + 1));
 
         for (int i = startByte; i < endByte; i++) {
