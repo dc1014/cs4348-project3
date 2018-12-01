@@ -1,6 +1,6 @@
-#include "FileSystem.h"
+#include "IndexedFileSystem.h"
 
-FileSystem::FileSystem() {
+IndexedFileSystem::IndexedFileSystem() {
     maxBuffer = 512;
     maxSize = 512 * 10;
     for (int i = 0; i < 131072; i++) {
@@ -14,7 +14,8 @@ FileSystem::FileSystem() {
     bytes[513] = '1';
 }
 
-void FileSystem::readFile(char* fileName, char* targetName) {
+// abstract
+void IndexedFileSystem::readFile(char* fileName, char* targetName) {
     ifstream is (fileName, ifstream::binary);
     int* blocks;
     int lastByte;
@@ -67,8 +68,7 @@ void FileSystem::readFile(char* fileName, char* targetName) {
     }
 }
 
-
-void FileSystem::writeFile(char* fileName, char* targetName) {
+void IndexedFileSystem::writeFile(char* fileName, char* targetName) {
     int* blocks;
     int startByte;
     ofstream os (targetName);
@@ -95,7 +95,7 @@ void FileSystem::writeFile(char* fileName, char* targetName) {
 }
 
 // abstract
-int* FileSystem::claimBlocks(int fileSize) {
+int* IndexedFileSystem::claimBlocks(int fileSize) {
     int * blocks = new int[10];
 
     for (int i = 0; i < 10; i++) {
@@ -144,7 +144,7 @@ int* FileSystem::claimBlocks(int fileSize) {
     return blocks;
 }
 
-void FileSystem::printTable() {
+void IndexedFileSystem::printTable() {
     for (int i = 0; i < 512; i++) {
 
         cout << bytes[i];
@@ -152,7 +152,7 @@ void FileSystem::printTable() {
     cout << endl;
 }
 
-int FileSystem::writeToSystem(char* buffer, int* blocks) {
+int IndexedFileSystem::writeToSystem(char* buffer, int* blocks) {
     int endingByte;
     unsigned int bufferPosition = 0;
     int startByte;
@@ -172,7 +172,7 @@ int FileSystem::writeToSystem(char* buffer, int* blocks) {
 }
 
 // abstract
-void FileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
+void IndexedFileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
     char buffer[20];
     int lastBlock = -1;
     int fileTablePosition = -1;
@@ -243,7 +243,7 @@ void FileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
     fileTablePosition++;
 }
 
-void FileSystem::printBitmap() {
+void IndexedFileSystem::printBitmap() {
     for (int i = 512; i < 768 ; i++) {
 
         cout << bytes[i];
@@ -256,7 +256,7 @@ void FileSystem::printBitmap() {
     cout << endl;
 }
 
-int * FileSystem::findFileBlocks(char * fileName) {
+int * IndexedFileSystem::findFileBlocks(char * fileName) {
     int* blocks = new int[11];
     smatch m;
     string delimiter = "|";
@@ -297,7 +297,7 @@ int * FileSystem::findFileBlocks(char * fileName) {
     return blocks;
 }
 
-void FileSystem::displayFile(char * fileName) {
+void IndexedFileSystem::displayFile(char * fileName) {
     int startByte;
     int* blocks;
     blocks = findFileBlocks(fileName);
@@ -322,7 +322,7 @@ void FileSystem::displayFile(char * fileName) {
     }
 }
 
-void FileSystem::printBlock(int block) {
+void IndexedFileSystem::printBlock(int block) {
     int startByte = 512 * (block - 1);
 
     for (int i = startByte; i < startByte + 512; i++) {
@@ -332,7 +332,7 @@ void FileSystem::printBlock(int block) {
     cout << endl;
 }
 
-void FileSystem::deleteFile(char* fileName) {
+void IndexedFileSystem::deleteFile(char* fileName) {
     int startByte;
     int* blocks;
     blocks = findFileBlocks(fileName);

@@ -1,8 +1,9 @@
 #include <fstream>
 #include <iostream>
+#include <string>
+#include "CtsFileSystem.h"
 #include "FileSystem.h"
 #include "IndexedFileSystem.h"
-
 
 using namespace std;
 
@@ -10,7 +11,27 @@ int main(int argc, char* argv[]) {
     int input;
     int blockToDisplay;
 
-    FileSystem fs;
+    CtsFileSystem ctsFs;
+    IndexedFileSystem indexedFs;
+    FileSystem* fs;
+
+    if (argc > 1) {
+        switch(stoi(argv[1])) {
+            case 0:
+                fs = &ctsFs;
+                break;
+            case 1:
+                fs = &indexedFs;
+                break;
+            default:
+                fs = &ctsFs;
+                break;
+        }
+    }
+    else {
+        fs = &ctsFs;
+    }
+
     char* inFileName = new char[8];
     char* copyFileName = new char[8];
 
@@ -33,38 +54,38 @@ int main(int argc, char* argv[]) {
             case 1: // display a file
                 cout << "Display file by name: ";
                 cin >> inFileName;
-                fs.displayFile(inFileName);
+                fs->displayFile(inFileName);
                 break;
             case 2: // print FS Table
-                fs.printTable();
+                fs->printTable();
                 break;
             case 3:
-                fs.printBitmap(); // print FS Bitmap
+                fs->printBitmap(); // print FS Bitmap
                 break;
             case 4: // display a disk block
                 cout << "Display block by number: ";
                 cin >> blockToDisplay;
-                fs.printBlock(blockToDisplay);
+                fs->printBlock(blockToDisplay);
                 break;
             case 5: // Copy file to disk
                 cout << "Copy from: ";
                 cin >> inFileName;
                 cout << "Copy to: ";
                 cin >> copyFileName;
-                fs.writeFile(inFileName, copyFileName);
+                fs->writeFile(inFileName, copyFileName);
                 break;
             case 6: // Copy file from disk
                 cout << "Copy from: ";
                 cin >> inFileName;
                 cout << "Copy to: ";
                 cin >> copyFileName;
-                fs.readFile(inFileName, copyFileName);
+                fs->readFile(inFileName, copyFileName);
                 cout << endl << "File " << inFileName << " copied" << endl;
                 break;
             case 7: // delete file in simuulation
                 cout << "Delete file: ";
                 cin >> inFileName;
-                fs.deleteFile(inFileName);
+                fs->deleteFile(inFileName);
                 break;
             case 8: // terminate
                 cout << "terminating" << endl;
