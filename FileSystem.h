@@ -15,7 +15,7 @@
 using namespace std;
 
 class FileSystem {
-    private:
+    protected:
         int maxBuffer;
         int maxSize;
         int fileTablePosition;
@@ -29,10 +29,11 @@ class FileSystem {
         void printBitmap();
         void printBlock(int);
         void printTable();
-        void readFile(char *, char *);
+        virtual void readFile(char *, char *);
         void writeFile(char *, char *);
         int writeToSystem(char *, int*);
         void writeToTable(char *, int*, int);
+        int blockStart(int);
 };
 
 #endif

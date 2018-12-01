@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <regex>
 #include <string>
+#include <vector>
+#include <cstdlib>
 #include "FileSystem.h"
 
 #define DATA_START 1024
@@ -16,24 +18,16 @@
 using namespace std;
 
 class IndexedFileSystem : public FileSystem {
-    private:
-        int maxBuffer;
-        int maxSize;
-        int fileTablePosition;
-        unsigned char bytes[131072];
     public:
         IndexedFileSystem();
-        int* claimBlocks(int);
+        vector<int> claimBlocks(int);
         int* findFileBlocks(char *);
         void deleteFile(char *);
         void displayFile(char *);
-        void printBitmap();
-        void printBlock(int);
-        void printTable();
         void readFile(char *, char *);
         void writeFile(char *, char *);
-        int writeToSystem(char *, int*);
-        void writeToTable(char *, int*, int);
+        int writeToSystem(char *, vector<int>);
+        void writeToTable(char *, vector<int>, int);
 };
 
 #endif

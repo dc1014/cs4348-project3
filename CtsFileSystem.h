@@ -16,13 +16,9 @@
 using namespace std;
 
 class CtsFileSystem : public FileSystem {
-    private:
-        int maxBuffer;
-        int maxSize;
-        int fileTablePosition;
-        unsigned char bytes[131072];
     public:
         CtsFileSystem();
+        void readFile(char *, char *);
 };
 
 #endif

@@ -16,8 +16,9 @@ IndexedFileSystem::IndexedFileSystem() {
 
 // abstract
 void IndexedFileSystem::readFile(char* fileName, char* targetName) {
+    cout << "poly!" << endl;
     ifstream is (fileName, ifstream::binary);
-    int* blocks;
+    vector<int> blocks;
     int lastByte;
 
     if (is) {
@@ -68,6 +69,31 @@ void IndexedFileSystem::readFile(char* fileName, char* targetName) {
     }
 }
 
+// TO DO: prevent over allocation
+vector<int> IndexedFileSystem::claimBlocks(int fileSize) {
+    vector<int> blocks;
+    vector<int> claimedBlocks;
+    int tempSize = fileSize;
+    int counter = 0;
+    srand (time(NULL));
+    int randomNumber;
+
+    for(int i = 514; i < 768; i++) {
+        if (bytes[i] == '0') blocks.push_back(i);
+    }
+
+    while (counter < 10 && tempSize > 0) {
+        randomNumber = rand() % blocks.size() + 1;
+        claimedBlocks.push_back(blocks.at(randomNumber) - BLOCK_OFFSET);
+        blocks.erase(blocks.begin() + randomNumber, blocks.begin() + randomNumber);
+        counter++;
+        tempSize = tempSize - 512;
+
+    }
+
+    return claimedBlocks;
+}
+
 void IndexedFileSystem::writeFile(char* fileName, char* targetName) {
     int* blocks;
     int startByte;
@@ -94,87 +120,30 @@ void IndexedFileSystem::writeFile(char* fileName, char* targetName) {
     }
 }
 
-// abstract
-int* IndexedFileSystem::claimBlocks(int fileSize) {
-    int * blocks = new int[10];
-
-    for (int i = 0; i < 10; i++) {
-        blocks[i] = 0;
-    }
-
-    int counter = 0;
-    int tempSize = fileSize;
-    bool attempt = false;
-
-    for(int i = 514; i < 768 && tempSize > 0; i++) {
-
-        if (attempt == true && bytes[i] == '1') {
-
-            i++;
-
-            for(int i = 0; i < 10; i++) {
-
-                if (blocks[i] != 0) {
-
-                    bytes[blocks[i]] = '0';
-                }
-
-                blocks[i] = 0;
-                counter = 0;
-                tempSize = fileSize;
-                attempt = false;
-            }
-        }
-
-        else if (bytes[i] == '0') {
-
-            tempSize = tempSize - 512;
-            blocks[counter] = i - BLOCK_OFFSET;
-            counter++;
-            bytes[i] = '1';
-            attempt = true;
-        }
-    }
-
-    if (counter == 0) {
-
-        blocks[0] = 0;
-    }
-
-    return blocks;
-}
-
-void IndexedFileSystem::printTable() {
-    for (int i = 0; i < 512; i++) {
-
-        cout << bytes[i];
-    }
-    cout << endl;
-}
-
-int IndexedFileSystem::writeToSystem(char* buffer, int* blocks) {
-    int endingByte;
+int IndexedFileSystem::writeToSystem(char* buffer, vector<int> blocks) {
+    int currentByte;
     unsigned int bufferPosition = 0;
-    int startByte;
-    for (unsigned int i = 0; i < sizeof(blocks) && bufferPosition < strlen(buffer); i++) {
-        if (blocks[i] != 0) {
-             startByte = ((blocks[i] - 1) * 512);
-             for(unsigned int j = 0; j < 512 && bufferPosition < strlen(buffer) + 1; j++) {
-                bytes[startByte + j] = buffer[bufferPosition];
-                bufferPosition++;
-                endingByte = startByte + j;
-             }
-        }
 
+    for (auto it = blocks.begin(); it != blocks.end(); it++) {
+            currentByte = blockStart(*it);
+            bytes[currentByte] = buffer[bufferPosition];
+            currentByte++;
+            bufferPosition++;
+            cout << "current block " << *it << endl;
+
+            while(currentByte % 512 != 0 && bufferPosition < strlen(buffer)) {
+                bytes[currentByte] = buffer[bufferPosition];
+                currentByte++;
+                bufferPosition++;
+            }
     }
 
-    return endingByte;
+    return currentByte;
 }
 
 // abstract
-void IndexedFileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
+void IndexedFileSystem::writeToTable(char* targetName, vector<int> blocks, int lastByte) {
     char buffer[20];
-    int lastBlock = -1;
     int fileTablePosition = -1;
     int counter = 0;
     while (fileTablePosition == -1 && counter < 512) {
@@ -204,56 +173,21 @@ void IndexedFileSystem::writeToTable(char* targetName, int* blocks, int lastByte
     bytes[fileTablePosition] = '|';
     fileTablePosition++;
 
-    for (unsigned int i = 0; i < sizeof(blocks); i++) {
+    for (auto it = blocks.begin(); it != blocks.end(); it++) {
+        sprintf(buffer,"%d",*it);
+        for (unsigned int i = 0; i < strlen(buffer); i++) {
 
-        sprintf(buffer,"%d",blocks[i]);
-
-        if (i == 0) {
-
-            for (unsigned int j = 0; j < strlen(buffer); j++) {
-
-                    bytes[fileTablePosition] = buffer[j];
-                    fileTablePosition++;
-            }
-
-            cout << endl;
-
+                bytes[fileTablePosition] = buffer[i];
+                fileTablePosition++;
+        }
+        if ((it != blocks.end()) && (next(it) != blocks.end())) {
             bytes[fileTablePosition] = '|';
             fileTablePosition++;
-            lastBlock = i;
         }
-
-        else if (blocks[i] != 0) {
-
-            lastBlock = i;
-        }
-    }
-
-    if (lastBlock != -1 && lastBlock != blocks[0]) {
-        sprintf(buffer,"%d",blocks[lastBlock]);
-    }
-
-    for (unsigned int i = 0; i < strlen(buffer); i++) {
-
-            bytes[fileTablePosition] = buffer[i];
-            fileTablePosition++;
     }
 
     bytes[fileTablePosition] = '\n';
     fileTablePosition++;
-}
-
-void IndexedFileSystem::printBitmap() {
-    for (int i = 512; i < 768 ; i++) {
-
-        cout << bytes[i];
-
-        if (i > 512 && (i + 1) % 32 == 0) {
-
-            cout << endl;
-        }
-    }
-    cout << endl;
 }
 
 int * IndexedFileSystem::findFileBlocks(char * fileName) {
@@ -320,16 +254,6 @@ void IndexedFileSystem::displayFile(char * fileName) {
 
         cout << "File " << fileName << " not found!" << endl;
     }
-}
-
-void IndexedFileSystem::printBlock(int block) {
-    int startByte = 512 * (block - 1);
-
-    for (int i = startByte; i < startByte + 512; i++) {
-        cout << bytes[i];
-    }
-
-    cout << endl;
 }
 
 void IndexedFileSystem::deleteFile(char* fileName) {

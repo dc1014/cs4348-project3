@@ -13,9 +13,9 @@ int main(int argc, char* argv[]) {
 
     CtsFileSystem ctsFs;
     IndexedFileSystem indexedFs;
-    FileSystem* fs;
+    FileSystem* fs = &indexedFs;
 
-    if (argc > 1) {
+    if (argc == 2) {
         switch(stoi(argv[1])) {
             case 0:
                 fs = &ctsFs;

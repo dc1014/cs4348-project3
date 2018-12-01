@@ -6,7 +6,13 @@ make
 
 To run:
 
-./main
+./main [0,1,2]
+
+Omitting second runtime parameters makes system run in Contingous File System mode. For the others
+
+0 - runs in Contiguous Mode
+1 - runs in Indexed Mode
+2 - runs in Chained Mode
 
 
 
