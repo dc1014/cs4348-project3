@@ -77,6 +77,7 @@ vector<int> IndexedFileSystem::claimBlocks(int fileSize) {
     int counter = 0;
     srand (time(NULL));
     int randomNumber;
+    int currentBlock;
 
     for(int i = 514; i < 768; i++) {
         if (bytes[i] == '0') blocks.push_back(i);
@@ -84,7 +85,9 @@ vector<int> IndexedFileSystem::claimBlocks(int fileSize) {
 
     while (counter < 10 && tempSize > 0) {
         randomNumber = rand() % blocks.size() + 1;
-        claimedBlocks.push_back(blocks.at(randomNumber) - BLOCK_OFFSET);
+        currentBlock = blocks.at(randomNumber) - BLOCK_OFFSET;
+        claimedBlocks.push_back(currentBlock);
+        bytes[currentBlock + BLOCK_OFFSET] = '1';
         blocks.erase(blocks.begin() + randomNumber, blocks.begin() + randomNumber);
         counter++;
         tempSize = tempSize - 512;
@@ -95,7 +98,7 @@ vector<int> IndexedFileSystem::claimBlocks(int fileSize) {
 }
 
 void IndexedFileSystem::writeFile(char* fileName, char* targetName) {
-    int* blocks;
+    vector<int> blocks;
     int startByte;
     ofstream os (targetName);
     blocks = findFileBlocks(fileName);
@@ -190,8 +193,8 @@ void IndexedFileSystem::writeToTable(char* targetName, vector<int> blocks, int l
     fileTablePosition++;
 }
 
-int * IndexedFileSystem::findFileBlocks(char * fileName) {
-    int* blocks = new int[11];
+vector<int> IndexedFileSystem::findFileBlocks(char * fileName) {
+    vector<int> blocks;
     smatch m;
     string delimiter = "|";
     int endBlock;
@@ -233,7 +236,7 @@ int * IndexedFileSystem::findFileBlocks(char * fileName) {
 
 void IndexedFileSystem::displayFile(char * fileName) {
     int startByte;
-    int* blocks;
+    vector<int> blocks;
     blocks = findFileBlocks(fileName);
     int endByte = blocks[0];
     int startBlock = blocks[1];
@@ -258,7 +261,7 @@ void IndexedFileSystem::displayFile(char * fileName) {
 
 void IndexedFileSystem::deleteFile(char* fileName) {
     int startByte;
-    int* blocks;
+    vector<int> blocks;
     blocks = findFileBlocks(fileName);
     int endByte = blocks[0];
     int startBlock = blocks[1];

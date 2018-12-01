@@ -66,3 +66,28 @@ void CtsFileSystem::readFile(char* fileName, char* targetName) {
         }
     }
 }
+
+void CtsFileSystem::displayFile(char * fileName) {
+    int startByte;
+    int* blocks;
+    blocks = findFileBlocks(fileName);
+    int endByte = blocks[0];
+    int startBlock = blocks[1];
+
+    if (startBlock != 0) {
+
+        startByte = 512 * startBlock - 1;
+
+        for (int i = startByte; i < endByte; i++) {
+
+            cout << bytes[i];
+        }
+
+        cout << endl;
+    }
+
+    else {
+
+        cout << "File " << fileName << " not found!" << endl;
+    }
+}

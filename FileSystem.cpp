@@ -198,7 +198,7 @@ void FileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
 void FileSystem::printBitmap() {
     for (int i = 512; i < 768 ; i++) {
 
-        cout << bytes[i];
+        cout << this->bytes[i];
 
         if (i > 512 && (i + 1) % 32 == 0) {
 
@@ -249,30 +249,7 @@ int * FileSystem::findFileBlocks(char * fileName) {
     return blocks;
 }
 
-void FileSystem::displayFile(char * fileName) {
-    int startByte;
-    int* blocks;
-    blocks = findFileBlocks(fileName);
-    int endByte = blocks[0];
-    int startBlock = blocks[1];
-
-    if (startBlock != 0) {
-
-        startByte = 512 * startBlock - 1;
-
-        for (int i = startByte; i < endByte; i++) {
-
-            cout << bytes[i];
-        }
-
-        cout << endl;
-    }
-
-    else {
-
-        cout << "File " << fileName << " not found!" << endl;
-    }
-}
+void FileSystem::displayFile(char * fileName) { }
 
 void FileSystem::printBlock(int block) {
     int startByte = 512 * (block - 1);
