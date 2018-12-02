@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     CtsFileSystem ctsFs;
     IndexedFileSystem indexedFs;
     ChainedFileSystem chainedFs;
-    FileSystem* fs = &indexedFs;
+    FileSystem* fs;
 
     if (argc == 2) {
         switch(stoi(argv[1])) {
@@ -27,13 +27,14 @@ int main(int argc, char* argv[]) {
                 break;
             case 2:
                 fs = &chainedFs;
+                break;
             default:
                 fs = &ctsFs;
                 break;
         }
     }
     else {
-        fs = &chainedFs;
+        fs = &ctsFs;
     }
 
     char* inFileName = new char[8];

@@ -190,6 +190,8 @@ void IndexedFileSystem::writeToTable(char* targetName, vector<int> blocks, int l
 
     bytes[fileTablePosition] = '\n';
     fileTablePosition++;
+
+    delete[] buffer;
 }
 
 vector<int> IndexedFileSystem::findFileBlocks(char * fileName) {

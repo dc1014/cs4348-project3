@@ -130,8 +130,6 @@ int ChainedFileSystem::writeToSystem(char* buffer, vector<int> blocks) {
             }
             else {
                 sprintf(nextBlock, "%03d", *next(it, 1));
-                cout << "next block by IT is " << *next(it, 1);
-                cout << "next block is " << nextBlock << endl;
                 for(unsigned int i = 0; i < 4; i++) {
                     bytes[currentByte] = nextBlock[i];
                     currentByte++;
@@ -186,6 +184,8 @@ void ChainedFileSystem::writeToTable(char* targetName, int firstBlock, int lastB
 
     bytes[fileTablePosition] = '\n';
     fileTablePosition++;
+
+    delete[] buffer;
 }
 
 vector<int> ChainedFileSystem::findFileBlocks(char * fileName) {
@@ -196,7 +196,6 @@ vector<int> ChainedFileSystem::findFileBlocks(char * fileName) {
     string token;
     string tempName = fileName;
     tempName += "\\|";
-    int startBlock;
     int startByte;
     string nextBlock;
 

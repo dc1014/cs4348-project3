@@ -99,7 +99,7 @@ int FileSystem::writeToSystem(char* buffer, int* blocks) {
 
 // abstract
 void FileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
-    char buffer[20];
+    char* buffer = new char [20];
     int lastBlock = -1;
     int fileTablePosition = -1;
     int counter = 0;
@@ -167,6 +167,8 @@ void FileSystem::writeToTable(char* targetName, int* blocks, int lastByte) {
 
     bytes[fileTablePosition] = '\n';
     fileTablePosition++;
+
+    delete[] buffer;
 }
 
 void FileSystem::printBitmap() {
