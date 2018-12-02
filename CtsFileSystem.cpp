@@ -36,6 +36,8 @@ void CtsFileSystem::readFile(char* fileName, char* targetName) {
 
             char * buffer = new char [length];
 
+
+
             // read data as a block:
             is.read (buffer,length);
 
@@ -72,12 +74,11 @@ void CtsFileSystem::displayFile(char * fileName) {
     int* blocks;
     blocks = findFileBlocks(fileName);
     int endByte = blocks[0];
-    int startBlock = blocks[1];
+    int firstBlock = blocks[1];
 
-    if (startBlock != 0) {
+    if (firstBlock != 0) {
 
-        startByte = 512 * startBlock - 1;
-
+        startByte = blockStart(firstBlock);
         for (int i = startByte; i < endByte; i++) {
 
             cout << bytes[i];
@@ -125,5 +126,30 @@ void CtsFileSystem::deleteFile(char* fileName) {
 
     else {
         cout << "File " << fileName << " not found!" << endl;
+    }
+}
+
+void CtsFileSystem::writeFile(char* fileName, char* targetName) {
+    int* blocks;
+    int startByte;
+    ofstream os (targetName);
+    blocks = findFileBlocks(fileName);
+    int endByte = blocks[0];
+
+    if (os && blocks[0] != 0) {
+
+        startByte = blockStart(blocks[1]);
+
+        for (int i = startByte; i < endByte; i++) {
+            os << bytes[i];
+        }
+
+        cout << endl;
+        os.close();
+    }
+
+    else {
+
+        cout << "File not found!" << endl;
     }
 }

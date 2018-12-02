@@ -17,10 +17,10 @@ IndexedFileSystem::IndexedFileSystem() {
 // abstract
 void IndexedFileSystem::readFile(char* fileName, char* targetName) {
     ifstream is (fileName, ifstream::binary);
-    vector<int> blocks;
-    int lastByte;
 
     if (is) {
+        vector<int> blocks;
+        int lastByte;
 
         // get length of file:
         is.seekg (0, is.end);
@@ -98,27 +98,30 @@ vector<int> IndexedFileSystem::claimBlocks(int fileSize) {
 
 void IndexedFileSystem::writeFile(char* fileName, char* targetName) {
     vector<int> blocks;
-    int startByte;
+    int firstByte;
     ofstream os (targetName);
     blocks = findFileBlocks(fileName);
-    int startBlock = blocks[1];
-    int endByte = blocks[0];
 
-    if (os && blocks[0] != 0) {
+    if(os && !blocks.empty()) {
 
-        startByte = 512 * startBlock - 1;
+        blocks.erase(blocks.begin());
+        int lastByte = blocks.front();
+        blocks.erase(blocks.begin());
 
-        for (int i = startByte; i < endByte; i++) {
-            os << bytes[i];
+        for (auto it = blocks.begin(); it != blocks.end(); it++) {
+            firstByte = blockStart(*it);
+            for (int i = firstByte; i < (firstByte + 512) && i != lastByte; i++) {
+                os << bytes[i];
+            }
         }
-
-        cout << endl;
         os.close();
+
+        cout << "Wrote: " << fileName << " to the HDD" << endl;
     }
 
     else {
 
-        cout << "File not found!" << endl;
+        cout << "File " << fileName << " not found!" << endl;
     }
 }
 
@@ -131,7 +134,6 @@ int IndexedFileSystem::writeToSystem(char* buffer, vector<int> blocks) {
             bytes[currentByte] = buffer[bufferPosition];
             currentByte++;
             bufferPosition++;
-            cout << "current block " << *it << endl;
 
             while(currentByte % 512 != 0 && bufferPosition < strlen(buffer)) {
                 bytes[currentByte] = buffer[bufferPosition];
@@ -145,7 +147,7 @@ int IndexedFileSystem::writeToSystem(char* buffer, vector<int> blocks) {
 
 // abstract
 void IndexedFileSystem::writeToTable(char* targetName, vector<int> blocks, int lastByte) {
-    char buffer[20];
+    char* buffer = new char [20];
     int fileTablePosition = -1;
     int counter = 0;
     while (fileTablePosition == -1 && counter < 512) {
@@ -224,21 +226,22 @@ vector<int> IndexedFileSystem::findFileBlocks(char * fileName) {
 }
 
 void IndexedFileSystem::displayFile(char * fileName) {
-    int startByte;
     vector<int> blocks;
     blocks = findFileBlocks(fileName);
-    int endByte = blocks[0];
-    int startBlock = blocks[1];
+    int firstByte;
 
-    if (startBlock != 0) {
+    if(!blocks.empty()) {
 
-        startByte = 512 * startBlock - 1;
+        blocks.erase(blocks.begin());
+        int lastByte = blocks.front();
+        blocks.erase(blocks.begin());
 
-        for (int i = startByte; i < endByte; i++) {
-
-            cout << bytes[i];
+        for (auto it = blocks.begin(); it != blocks.end(); it++) {
+            firstByte = blockStart(*it);
+            for (int i = firstByte; i < (firstByte + 512) && i != lastByte; i++) {
+                cout << bytes[i];
+            }
         }
-
         cout << endl;
     }
 
@@ -254,10 +257,6 @@ void IndexedFileSystem::deleteFile(char* fileName) {
     int firstByte;
 
     if(!blocks.empty()) {
-
-        for (auto it = blocks.begin(); it != blocks.end(); it++) {
-            cout << "block metadata: " << *it << endl;
-        }
 
         // find exact match in file table
         for (int i = blocks.front(); i < blocks.front() + FILE_TABLE_FIXED; i++) {

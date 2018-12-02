@@ -24,12 +24,12 @@ int main(int argc, char* argv[]) {
                 fs = &indexedFs;
                 break;
             default:
-                fs = &ctsFs;
+                fs = &indexedFs;
                 break;
         }
     }
     else {
-        fs = &ctsFs;
+        fs = &indexedFs;
     }
 
     char* inFileName = new char[8];

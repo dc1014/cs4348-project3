@@ -20,33 +20,8 @@ int FileSystem::blockStart(int block) {
 
 void FileSystem::readFile(char* fileName, char* targetName) { }
 
-void FileSystem::writeFile(char* fileName, char* targetName) {
-    int* blocks;
-    int startByte;
-    ofstream os (targetName);
-    blocks = findFileBlocks(fileName);
-    int startBlock = blocks[1];
-    int endByte = blocks[0];
+void FileSystem::writeFile(char* fileName, char* targetName) { }
 
-    if (os && blocks[0] != 0) {
-
-        startByte = 512 * startBlock - 1;
-
-        for (int i = startByte; i < endByte; i++) {
-            os << bytes[i];
-        }
-
-        cout << endl;
-        os.close();
-    }
-
-    else {
-
-        cout << "File not found!" << endl;
-    }
-}
-
-// abstract
 int* FileSystem::claimBlocks(int fileSize) {
     int * blocks = new int[10];
 
@@ -251,10 +226,23 @@ int * FileSystem::findFileBlocks(char * fileName) {
 void FileSystem::displayFile(char * fileName) { }
 
 void FileSystem::printBlock(int block) {
-    int startByte = 512 * (block - 1);
+    if (block <= 256) {
+        int startByte = 512 * (block - 1);
 
-    for (int i = startByte; i < startByte + 512; i++) {
-        cout << this->bytes[i];
+        for (int i = startByte; i < startByte + 512; i++) {
+            cout << this->bytes[i];
+        }
+    }
+    else {
+        cout << "block " << block << " not in file system.";
+    }
+
+    cout << endl;
+}
+
+void FileSystem::printVector(vector<int> myVec) {
+    for (auto it = myVec.begin(); it != myVec.end(); it++) {
+        cout << "vector contents: " << *it << endl;
     }
 
     cout << endl;

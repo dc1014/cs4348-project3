@@ -14,9 +14,10 @@ using namespace std;
 class CtsFileSystem : public FileSystem {
     public:
         CtsFileSystem();
-        void readFile(char *, char *);
-        void displayFile(char *);
         void deleteFile(char *);
+        void displayFile(char *);
+        void readFile(char *, char *);
+        void writeFile(char*, char*);
 };
 
 #endif

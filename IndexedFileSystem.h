@@ -16,13 +16,13 @@ using namespace std;
 class IndexedFileSystem : public FileSystem {
     public:
         IndexedFileSystem();
+        int writeToSystem(char *, vector<int>);
         vector<int> claimBlocks(int);
         vector<int> findFileBlocks(char *);
         void deleteFile(char *);
         void displayFile(char *);
         void readFile(char *, char *);
         void writeFile(char *, char *);
-        int writeToSystem(char *, vector<int>);
         void writeToTable(char *, vector<int>, int);
 };
 
