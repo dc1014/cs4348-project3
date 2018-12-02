@@ -13,6 +13,8 @@
 
 using namespace std;
 
+#define MAX_EXTRA_ENCODING 30
+
 class ChainedFileSystem : public FileSystem {
     public:
         ChainedFileSystem();
@@ -23,7 +25,7 @@ class ChainedFileSystem : public FileSystem {
         void displayFile(char *);
         void readFile(char *, char *);
         void writeFile(char *, char *);
-        void writeToTable(char *, vector<int>, int);
+        void writeToTable(char *, int, int);
 };
 
 #endif

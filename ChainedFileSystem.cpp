@@ -25,8 +25,9 @@ void ChainedFileSystem::readFile(char* fileName, char* targetName) {
         // get length of file:
         is.seekg (0, is.end);
         int length = is.tellg();
+        int encodingLength = length + MAX_EXTRA_ENCODING;
 
-        if (length > maxSize) {
+        if (encodingLength > maxSize) {
 
             cout << "File too big, skipping" << endl;
             is.close();
@@ -52,7 +53,7 @@ void ChainedFileSystem::readFile(char* fileName, char* targetName) {
                 if (is) {
 
                     lastByte = writeToSystem(buffer, blocks);
-                    writeToTable(targetName, blocks, lastByte);
+                    writeToTable(targetName, blocks.front(), lastByte);
                     cout << "all characters read successfully.";
                 }
                 else {
@@ -89,64 +90,60 @@ vector<int> ChainedFileSystem::claimBlocks(int fileSize) {
         bytes[currentBlock + BLOCK_OFFSET] = '1';
         blocks.erase(blocks.begin() + randomNumber, blocks.begin() + randomNumber);
         counter++;
-        tempSize = tempSize - 512;
+        tempSize = tempSize - 509;
 
     }
 
     return claimedBlocks;
 }
 
-void ChainedFileSystem::writeFile(char* fileName, char* targetName) {
-    vector<int> blocks;
-    int firstByte;
-    ofstream os (targetName);
-    blocks = findFileBlocks(fileName);
-
-    if(os && !blocks.empty()) {
-
-        blocks.erase(blocks.begin());
-        int lastByte = blocks.front();
-        blocks.erase(blocks.begin());
-
-        for (auto it = blocks.begin(); it != blocks.end(); it++) {
-            firstByte = blockStart(*it);
-            for (int i = firstByte; i < (firstByte + 512) && i != lastByte; i++) {
-                os << bytes[i];
-            }
-        }
-        os.close();
-
-        cout << "Wrote: " << fileName << " to the HDD" << endl;
-    }
-
-    else {
-
-        cout << "File " << fileName << " not found!" << endl;
-    }
-}
-
 int ChainedFileSystem::writeToSystem(char* buffer, vector<int> blocks) {
     int currentByte;
     unsigned int bufferPosition = 0;
+    char nextBlock[4];
+    int blockCounter;
 
     for (auto it = blocks.begin(); it != blocks.end(); it++) {
+            blockCounter = 0;
             currentByte = blockStart(*it);
             bytes[currentByte] = buffer[bufferPosition];
             currentByte++;
             bufferPosition++;
+            blockCounter++;
 
-            while(currentByte % 512 != 0 && bufferPosition < strlen(buffer)) {
+            while(blockCounter < 509 && bufferPosition < strlen(buffer)) {
                 bytes[currentByte] = buffer[bufferPosition];
                 currentByte++;
                 bufferPosition++;
+                blockCounter++;
+            }
+
+            if (it == blocks.end()) {
+                for(int i = 0; i < 4; i++) {
+                    bytes[currentByte] = '0';
+                    currentByte++;
+                    bytes[currentByte] = '0';
+                    currentByte++;
+                    bytes[currentByte] = '0';
+                    currentByte++;
+                }
+            }
+            else {
+                sprintf(nextBlock, "%03d", *next(it, 1));
+                cout << "next block by IT is " << *next(it, 1);
+                cout << "next block is " << nextBlock << endl;
+                for(unsigned int i = 0; i < 4; i++) {
+                    bytes[currentByte] = nextBlock[i];
+                    currentByte++;
+                }
             }
     }
 
-    return currentByte;
+    return currentByte - 4; // no need to write the end of the encoding to the file
 }
 
 // abstract
-void ChainedFileSystem::writeToTable(char* targetName, vector<int> blocks, int lastByte) {
+void ChainedFileSystem::writeToTable(char* targetName, int firstBlock, int lastByte) {
     char* buffer = new char [20];
     int fileTablePosition = -1;
     int counter = 0;
@@ -177,16 +174,15 @@ void ChainedFileSystem::writeToTable(char* targetName, vector<int> blocks, int l
     bytes[fileTablePosition] = '|';
     fileTablePosition++;
 
-    for (auto it = blocks.begin(); it != blocks.end(); it++) {
-        sprintf(buffer,"%d",*it);
-        for (unsigned int i = 0; i < strlen(buffer); i++) {
+    sprintf(buffer,"%d", firstBlock);
 
-                bytes[fileTablePosition] = buffer[i];
-                fileTablePosition++;
-        }
-            bytes[fileTablePosition] = '|';
-            fileTablePosition++;
+    for (unsigned int i = 0; i < strlen(buffer); i++) {
+        bytes[fileTablePosition] = buffer[i];
+        fileTablePosition++;
     }
+
+    bytes[fileTablePosition] = '|';
+    fileTablePosition++;
 
     bytes[fileTablePosition] = '\n';
     fileTablePosition++;
@@ -200,6 +196,9 @@ vector<int> ChainedFileSystem::findFileBlocks(char * fileName) {
     string token;
     string tempName = fileName;
     tempName += "\\|";
+    int startBlock;
+    int startByte;
+    string nextBlock;
 
     regex re(tempName);
 
@@ -220,7 +219,23 @@ vector<int> ChainedFileSystem::findFileBlocks(char * fileName) {
             blocks.push_back(stoi(token.substr(0, token.find(delimiter))));
             token.erase(0, token.find(delimiter) + delimiter.length());
         }
+
+        for (int i = blockStart(blocks.at(2)) + 509; i < blockStart(blocks.at(2)) + 512; i++) {
+            nextBlock += bytes[i];
+        }
+
+        while(nextBlock != "000") {
+            blocks.push_back(stoi(nextBlock));
+
+            startByte = blockStart(stoi(nextBlock)) + 509;
+            nextBlock = bytes[startByte];
+            startByte++;
+            nextBlock += bytes[startByte];
+            startByte++;
+            nextBlock += bytes[startByte++];
+        }
     }
+
 
     return blocks;
 }
@@ -230,6 +245,8 @@ void ChainedFileSystem::displayFile(char * fileName) {
     blocks = findFileBlocks(fileName);
     int firstByte;
 
+    printVector(blocks);
+
     if(!blocks.empty()) {
 
         blocks.erase(blocks.begin());
@@ -238,7 +255,7 @@ void ChainedFileSystem::displayFile(char * fileName) {
 
         for (auto it = blocks.begin(); it != blocks.end(); it++) {
             firstByte = blockStart(*it);
-            for (int i = firstByte; i < (firstByte + 512) && i != lastByte; i++) {
+            for (int i = firstByte; i < (firstByte + 509) && i != lastByte; i++) {
                 cout << bytes[i];
             }
         }
@@ -279,6 +296,35 @@ void ChainedFileSystem::deleteFile(char* fileName) {
     }
 
     else {
+        cout << "File " << fileName << " not found!" << endl;
+    }
+}
+
+void ChainedFileSystem::writeFile(char* fileName, char* targetName) {
+    vector<int> blocks;
+    int firstByte;
+    ofstream os (targetName);
+    blocks = findFileBlocks(fileName);
+
+    if(os && !blocks.empty()) {
+
+        blocks.erase(blocks.begin());
+        int lastByte = blocks.front();
+        blocks.erase(blocks.begin());
+
+        for (auto it = blocks.begin(); it != blocks.end(); it++) {
+            firstByte = blockStart(*it);
+            for (int i = firstByte; i < (firstByte + 509) && i != lastByte; i++) {
+                os << bytes[i];
+            }
+        }
+        os.close();
+
+        cout << "Wrote: " << fileName << " to the HDD" << endl;
+    }
+
+    else {
+
         cout << "File " << fileName << " not found!" << endl;
     }
 }
