@@ -4,6 +4,7 @@
 #include "CtsFileSystem.h"
 #include "FileSystem.h"
 #include "IndexedFileSystem.h"
+#include "ChainedFileSystem.h"
 
 using namespace std;
 
@@ -13,6 +14,7 @@ int main(int argc, char* argv[]) {
 
     CtsFileSystem ctsFs;
     IndexedFileSystem indexedFs;
+    ChainedFileSystem chainedFs;
     FileSystem* fs = &indexedFs;
 
     if (argc == 2) {
@@ -23,13 +25,15 @@ int main(int argc, char* argv[]) {
             case 1:
                 fs = &indexedFs;
                 break;
+            case 2:
+                fs = &chainedFs;
             default:
-                fs = &indexedFs;
+                fs = &ctsFs;
                 break;
         }
     }
     else {
-        fs = &indexedFs;
+        fs = &chainedFs;
     }
 
     char* inFileName = new char[8];

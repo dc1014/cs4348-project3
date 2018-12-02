@@ -7,7 +7,7 @@ CPPFLAGS = -std=c++1z -Wall
 PROJECTNAME = CS4348.Project3
 EXECFILE = main
 
-OBJS = main.o FileSystem.o CtsFileSystem.o IndexedFileSystem.o
+OBJS = main.o FileSystem.o CtsFileSystem.o IndexedFileSystem.o ChainedFileSystem.o
 
 all: $(EXECFILE)
 
