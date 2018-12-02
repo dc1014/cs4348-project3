@@ -16,6 +16,7 @@ class CtsFileSystem : public FileSystem {
         CtsFileSystem();
         void readFile(char *, char *);
         void displayFile(char *);
+        void deleteFile(char *);
 };
 
 #endif

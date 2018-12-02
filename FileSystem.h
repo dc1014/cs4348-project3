@@ -10,7 +10,7 @@
 
 #define DATA_START 1024
 #define BLOCK_OFFSET 511
-#define FILE_TABLE_FIXED 128
+#define FILE_TABLE_FIXED 64
 
 using namespace std;
 
@@ -24,7 +24,7 @@ class FileSystem {
         FileSystem();
         int* claimBlocks(int);
         int* findFileBlocks(char *);
-        void deleteFile(char *);
+        virtual void deleteFile(char *);
         virtual void displayFile(char *);
         void printBitmap();
         void printBlock(int);

@@ -91,3 +91,39 @@ void CtsFileSystem::displayFile(char * fileName) {
         cout << "File " << fileName << " not found!" << endl;
     }
 }
+
+void CtsFileSystem::deleteFile(char* fileName) {
+    int startByte;
+    int* blocks;
+    blocks = findFileBlocks(fileName);
+    int endByte = blocks[0];
+    int startBlock = blocks[1];
+    int endBlock = blocks[2];
+
+    // find exact match in file table
+    if (blocks[0] != 0) {
+
+        startByte = 512 * (startBlock - 1);
+
+        for (int i = startByte; i < endByte; i++) {
+
+            bytes[i] = '0';
+        }
+
+        for (int i = blocks[3]; i < blocks[3] + FILE_TABLE_FIXED; i++) {
+            bytes[i] = '0';
+            if (i == blocks[3]) {
+                bytes[i] = '~';
+            }
+        }
+
+        for (int i = startBlock - 1; i <= endBlock; i++) {
+
+            bytes[i + 512] = '0';
+        }
+    }
+
+    else {
+        cout << "File " << fileName << " not found!" << endl;
+    }
+}

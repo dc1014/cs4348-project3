@@ -16,7 +16,6 @@ IndexedFileSystem::IndexedFileSystem() {
 
 // abstract
 void IndexedFileSystem::readFile(char* fileName, char* targetName) {
-    cout << "poly!" << endl;
     ifstream is (fileName, ifstream::binary);
     vector<int> blocks;
     int lastByte;
@@ -183,10 +182,8 @@ void IndexedFileSystem::writeToTable(char* targetName, vector<int> blocks, int l
                 bytes[fileTablePosition] = buffer[i];
                 fileTablePosition++;
         }
-        if ((it != blocks.end()) && (next(it) != blocks.end())) {
             bytes[fileTablePosition] = '|';
             fileTablePosition++;
-        }
     }
 
     bytes[fileTablePosition] = '\n';
@@ -197,10 +194,7 @@ vector<int> IndexedFileSystem::findFileBlocks(char * fileName) {
     vector<int> blocks;
     smatch m;
     string delimiter = "|";
-    int endBlock;
     string fileTable;
-    int startBlock;
-    int endByte;
     string token;
     string tempName = fileName;
     tempName += "\\|";
@@ -217,18 +211,13 @@ vector<int> IndexedFileSystem::findFileBlocks(char * fileName) {
     // find exact match in file table
     if (m.position(0) != 512) {
 
-        blocks[3] = m.position(0); // starting position of liine on File table
-        token = fileTable.substr(m.position(0), fileTable.find('\n'));
-        blocks[4] = token.length(); // ending position of line on file table
+        blocks.push_back(m.position(0)); // starting position of liine on File table
+        token = fileTable.substr(m.position(0), fileTable.find('\n')); // copy of the whole line
         token.erase(0, token.find(delimiter) + delimiter.length());
-        endByte = stoi(token.substr(0, token.find(delimiter)));
-        token.erase(0, token.find(delimiter) + delimiter.length());
-        startBlock = stoi(token.substr(0, token.find(delimiter)));
-        token.erase(0, token.find(delimiter) + delimiter.length());
-        endBlock = stoi(token.substr(0, token.find("\n"))); // special delimiter for end of life
-        blocks[0] = endByte;
-        blocks[1] = startBlock;
-        blocks[2] = endBlock;
+        while (token.find(delimiter) + delimiter.length()) {
+            blocks.push_back(stoi(token.substr(0, token.find(delimiter))));
+            token.erase(0, token.find(delimiter) + delimiter.length());
+        }
     }
 
     return blocks;
@@ -260,33 +249,33 @@ void IndexedFileSystem::displayFile(char * fileName) {
 }
 
 void IndexedFileSystem::deleteFile(char* fileName) {
-    int startByte;
     vector<int> blocks;
     blocks = findFileBlocks(fileName);
-    int endByte = blocks[0];
-    int startBlock = blocks[1];
-    int endBlock = blocks[2];
+    int firstByte;
 
-    // find exact match in file table
-    if (blocks[0] != 0) {
+    if(!blocks.empty()) {
 
-        startByte = 512 * (startBlock - 1);
-
-        for (int i = startByte; i < endByte; i++) {
-
-            bytes[i] = '0';
+        for (auto it = blocks.begin(); it != blocks.end(); it++) {
+            cout << "block metadata: " << *it << endl;
         }
 
-        for (int i = blocks[3]; i < blocks[3] + FILE_TABLE_FIXED; i++) {
+        // find exact match in file table
+        for (int i = blocks.front(); i < blocks.front() + FILE_TABLE_FIXED; i++) {
             bytes[i] = '0';
-            if (i == blocks[3]) {
+            if (i == blocks.front()) {
                 bytes[i] = '~';
             }
         }
 
-        for (int i = startBlock - 1; i <= endBlock; i++) {
+        blocks.erase(blocks.begin());
+        blocks.erase(blocks.begin());
 
-            bytes[i + 512] = '0';
+        for (auto it = blocks.begin(); it != blocks.end(); it++) {
+            bytes[*it + BLOCK_OFFSET] = '0';
+            firstByte = blockStart(*it);
+            for (int i = firstByte; i < firstByte + 512; i++) {
+                bytes[i] = '0';
+            }
         }
     }
 
